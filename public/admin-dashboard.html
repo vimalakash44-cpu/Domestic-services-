@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Domestic Services</title>
+    <link rel="stylesheet" href="admin-dashboard.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular.min.js"></script>
+    <script src="angular-integration.js"></script>
+</head>
+
+<body ng-app="domesticServicesApp" ng-controller="GlobalPageController">
+
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">DS</div>
+            <div>
+                <h2>Domestic</h2>
+                <span>Services</span>
+            </div>
+        </div>
+
+        <nav>
+            <a href="#" class="nav-item active">
+                <span>⌂</span>
+                Dashboard
+            </a>
+
+            <a href="#pendingSection" class="nav-item">
+                <span>◷</span>
+                Company Verification
+                <b id="sidebarPending">0</b>
+            </a>
+
+            <a href="#companiesSection" class="nav-item">
+                <span>▣</span>
+                Companies
+            </a>
+
+            <a href="#complaintsSection" class="nav-item">
+                <span>⚠</span>
+                Company Complaints
+                <b id="sidebarComplaints">0</b>
+            </a>
+
+            <a href="#settingsSection" class="nav-item">
+                <span>⚙</span>
+                Settings
+            </a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="admin-profile">
+                <div class="avatar">A</div>
+                <div>
+                    <strong>Administrator</strong>
+                    <small>System Admin</small>
+                </div>
+            </div>
+
+            <button id="logoutBtn" class="logout-btn">
+                ⇥ Logout
+            </button>
+        </div>
+
+    </aside>
+
+
+    <main class="main">
+
+        <header class="topbar">
+
+            <div>
+                <p class="breadcrumb">Administration / Dashboard</p>
+                <h1>Admin Dashboard</h1>
+            </div>
+
+            <div class="top-right">
+                <div class="notification">
+                    🔔
+                    <span id="notificationCount">0</span>
+                </div>
+
+                <div class="admin-name">
+                    <div class="avatar small">A</div>
+                    <div>
+                        <strong>Admin</strong>
+                        <small>Administrator</small>
+                    </div>
+                </div>
+            </div>
+
+        </header>
+
+
+        <section class="welcome">
+
+            <div>
+                <p class="welcome-label">WELCOME BACK</p>
+                <h2>Manage your platform</h2>
+                <p>
+                    Review companies, verify documents and manage
+                    your domestic services platform.
+                </p>
+            </div>
+
+            <div class="welcome-icon">
+                ✓
+            </div>
+
+        </section>
+
+
+        <section class="stats">
+
+            <div class="stat-card">
+
+                <div class="stat-icon pending">
+                    ◷
+                </div>
+
+                <div>
+                    <p>Pending Verification</p>
+                    <h2 id="pendingCount">0</h2>
+                    <span>Companies waiting for review</span>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon approved">
+                    ✓
+                </div>
+
+                <div>
+                    <p>Approved Companies</p>
+                    <h2 id="approvedCount">0</h2>
+                    <span>Verified companies</span>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon rejected">
+                    ×
+                </div>
+
+                <div>
+                    <p>Rejected</p>
+                    <h2 id="rejectedCount">0</h2>
+                    <span>Rejected applications</span>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon total">
+                    ▣
+                </div>
+
+                <div>
+                    <p>Total Companies</p>
+                    <h2 id="totalCount">0</h2>
+                    <span>Registered companies</span>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section id="pendingSection" class="content-section">
+
+            <div class="section-header">
+
+                <div>
+                    <p class="section-label">REQUIRES ACTION</p>
+                    <h2>Company Verification</h2>
+                    <p>
+                        Review company documents before approving
+                        their registration.
+                    </p>
+                </div>
+
+                <button id="refreshBtn" class="refresh-btn">
+                    ↻ Refresh
+                </button>
+
+            </div>
+
+
+            <div id="companyList" class="company-list">
+
+                <div class="loading">
+                    Loading companies...
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section id="companiesSection" class="content-section">
+
+            <div class="section-header">
+
+                <div>
+                    <p class="section-label">PLATFORM</p>
+                    <h2>Company Management</h2>
+                    <p>
+                        Manage verified service providers.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="info-box">
+
+                <div class="info-icon">
+                    ✓
+                </div>
+
+                <div>
+                    <h3>Verification protects your platform</h3>
+                    <p>
+                        Only companies approved by an administrator
+                        can become visible to customers.
+                    </p>
+                </div>
+
+            </div>
+
+            <div id="approvedCompaniesList" class="company-list">
+                <div class="loading">Loading companies...</div>
+            </div>
+
+        </section>
+
+        <section id="complaintsSection" class="content-section">
+
+            <div class="section-header">
+
+                <div>
+                    <p class="section-label">CUSTOMER FEEDBACK</p>
+                    <h2>Company Complaints</h2>
+                    <p>
+                        Review and manage complaints about companies from customers.
+                    </p>
+                </div>
+
+                <button id="refreshComplaintsBtn" class="refresh-btn">
+                    ↻ Refresh
+                </button>
+
+            </div>
+
+            <div id="complaintsList" class="company-list">
+                <div class="loading">Loading complaints...</div>
+            </div>
+
+        </section>
+
+        <section id="settingsSection" class="content-section">
+
+            <div class="section-header">
+
+                <div>
+                    <p class="section-label">ADMINISTRATION</p>
+                    <h2>Platform Settings</h2>
+                    <p>
+                        Configure platform-wide settings and preferences.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="dashboard-grid">
+
+                <div class="card">
+                    <h2>General Settings</h2>
+
+                    <div class="form-group">
+                        <label>Platform Name</label>
+                        <input type="text" value="Domestic Services" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Admin Email</label>
+                        <input type="email" value="admin@domesticservices.com" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Platform Status</label>
+                        <select>
+                            <option value="active">Active</option>
+                            <option value="maintenance">Maintenance Mode</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="card">
+                    <h2>Security Settings</h2>
+
+                    <div class="form-group">
+                        <label>Session Timeout (minutes)</label>
+                        <input type="number" value="60">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Password Policy</label>
+                        <select>
+                            <option value="standard">Standard (8+ characters)</option>
+                            <option value="strong">Strong (12+ with special chars)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Two-Factor Authentication</label>
+                        <select>
+                            <option value="disabled">Disabled</option>
+                            <option value="enabled">Enabled (Admins only)</option>
+                        </select>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+
+                <h2>Notification Settings</h2>
+
+                <div class="details">
+
+                    <div>
+                        <label>Email Notifications</label>
+                        <select>
+                            <option value="all">All Notifications</option>
+                            <option value="important">Important Only</option>
+                            <option value="none">Disabled</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label>New Company Alerts</label>
+                        <select>
+                            <option value="enabled">Enabled</option>
+                            <option value="disabled">Disabled</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label>Complaint Alerts</label>
+                        <select>
+                            <option value="enabled">Enabled</option>
+                            <option value="disabled">Disabled</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <button class="save-button" style="margin-top: 20px;">Save Settings</button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <div id="companyModal" class="modal">
+
+        <div class="modal-content">
+
+            <button class="close-btn" id="closeModal">
+                ×
+            </button>
+
+            <div class="modal-header">
+                <div class="modal-company-icon">
+                    C
+                </div>
+
+                <div>
+                    <p>COMPANY APPLICATION</p>
+                    <h2 id="modalCompanyName">Company</h2>
+                </div>
+            </div>
+
+
+            <div class="details-grid">
+
+                <div class="detail">
+                    <span>Owner</span>
+                    <strong id="modalOwner"></strong>
+                </div>
+
+                <div class="detail">
+                    <span>Email</span>
+                    <strong id="modalEmail"></strong>
+                </div>
+
+                <div class="detail">
+                    <span>Phone</span>
+                    <strong id="modalPhone"></strong>
+                </div>
+
+                <div class="detail">
+                    <span>City</span>
+                    <strong id="modalCity"></strong>
+                </div>
+
+                <div class="detail">
+                    <span>Experience</span>
+                    <strong id="modalExperience"></strong>
+                </div>
+
+                <div class="detail">
+                    <span>Total Workers</span>
+                    <strong id="modalWorkers"></strong>
+                </div>
+
+                <div class="detail full">
+                    <span>Address</span>
+                    <strong id="modalAddress"></strong>
+                </div>
+
+                <div class="detail full">
+                    <span>Services</span>
+                    <strong id="modalServices"></strong>
+                </div>
+
+                <div class="detail full">
+                    <span>Description</span>
+                    <strong id="modalDescription"></strong>
+                </div>
+
+            </div>
+
+
+            <div class="document-box">
+
+                <div>
+                    <span>VERIFICATION DOCUMENT</span>
+                    <strong id="modalDocument"></strong>
+                </div>
+
+                <button id="documentBtn" class="document-btn">
+                    View Document
+                </button>
+
+            </div>
+
+
+            <div class="modal-actions">
+
+                <button id="rejectBtn" class="reject-btn">
+                    Reject Application
+                </button>
+
+                <button id="approveBtn" class="approve-btn">
+                    ✓ Approve Company
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="companyDetailsModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" id="closeCompanyDetailsModal">×</button>
+            <div class="modal-header">
+                <div class="modal-company-icon">C</div>
+                <div>
+                    <p>COMPANY DETAILS</p>
+                    <h2 id="companyDetailsName">Company Name</h2>
+                </div>
+            </div>
+            <div class="details-grid">
+                <div class="detail"><span>Owner</span><strong id="companyDetailsOwner"></strong></div>
+                <div class="detail"><span>Email</span><strong id="companyDetailsEmail"></strong></div>
+                <div class="detail"><span>Phone</span><strong id="companyDetailsPhone"></strong></div>
+                <div class="detail"><span>City</span><strong id="companyDetailsCity"></strong></div>
+                <div class="detail"><span>Rating</span><strong id="companyDetailsRating"></strong></div>
+                <div class="detail"><span>Total Reviews</span><strong id="companyDetailsReviews"></strong></div>
+                <div class="detail full"><span>Address</span><strong id="companyDetailsAddress"></strong></div>
+                <div class="detail full"><span>Services</span><strong id="companyDetailsServices"></strong></div>
+            </div>
+            <div class="modal-actions">
+                <button id="removeCompanyBtn" class="reject-btn">Remove Company</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="complaintDetailsModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" id="closeComplaintDetailsModal">×</button>
+            <div class="modal-header">
+                <div class="modal-company-icon">⚠</div>
+                <div>
+                    <p>COMPLAINT DETAILS</p>
+                    <h2 id="complaintDetailsCompany">Company Name</h2>
+                </div>
+            </div>
+            <div id="complaintDetailsContent" class="details-grid">
+                <!-- Complaint details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="admin-dashboard.js"></script>
+
+</body>
+</html>

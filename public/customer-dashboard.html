@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard | Domestic Services</title>
+    <link rel="stylesheet" href="customer-dashboard.css">
+    <link rel="stylesheet" href="customer-wallet.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular.min.js"></script>
+    <script src="angular-integration.js"></script>
+</head>
+<body ng-app="domesticServicesApp" ng-controller="GlobalPageController">
+
+<header class="topbar">
+    <div class="brand">
+        <span class="brand-icon">🏠</span>
+        <span>Domestic Services</span>
+    </div>
+
+    <div class="top-right">
+        <div class="wallet-topbar-widget" id="walletTopbarWidget" onclick="openWalletModal()">
+            <span class="wallet-topbar-icon">💰</span>
+            <div class="wallet-topbar-info">
+                <small>Wallet Balance</small>
+                <strong id="topbarWalletBalance">₹0.00</strong>
+            </div>
+        </div>
+        <button class="icon-btn" id="notificationBellBtn" onclick="openNotificationsPanel()">🔔<span class="notification-badge" id="notifBadge" style="display:none;">0</span></button>
+
+        <div class="user-box">
+            <div class="user-avatar" id="userAvatar">V</div>
+            <div>
+                <strong id="userName">Customer</strong>
+                <small>Customer</small>
+            </div>
+        </div>
+
+        <button id="logoutBtn" class="logout-btn">Logout</button>
+    </div>
+</header>
+
+<div class="layout">
+
+    <aside class="sidebar">
+
+        <div class="menu-title">CUSTOMER MENU</div>
+
+        <button class="side-item active" id="dashboardBtn">
+            🏠 Dashboard
+        </button>
+
+        <button class="side-item" id="currentRequestsBtn">
+            ⚡ Current Requests
+            <span id="currentRequestCount">0</span>
+        </button>
+
+        <button class="side-item" id="requestsBtn">
+            📋 My Requests (Completed)
+            <span id="requestCount">0</span>
+        </button>
+
+        <button class="side-item" id="bookingsBtn">
+            📅 My Bookings
+        </button>
+
+        <button class="side-item" id="walletBtn">
+            💰 My Wallet
+        </button>
+
+        <button class="side-item" id="favoritesBtn">
+            ❤️ Favorites
+        </button>
+
+        <button class="side-item" id="messagesBtn">
+            💬 Messages
+        </button>
+
+        <button class="side-item" id="profileBtn">
+            👤 My Profile
+        </button>
+
+        <div class="sidebar-bottom">
+            <div class="help-box">
+                <div>💡</div>
+                <strong>Need help?</strong>
+                <p>Find the right service company for your home.</p>
+            </div>
+        </div>
+
+    </aside>
+
+    <main class="main">
+
+        <section class="welcome">
+            <div>
+                <p class="welcome-small">WELCOME BACK 👋</p>
+                <h1>Find the right service for your home</h1>
+                <p>
+                    Discover verified and trusted domestic service companies
+                    near you.
+                </p>
+            </div>
+
+            <div class="welcome-icon">🏡</div>
+        </section>
+
+        <section class="search-section">
+
+            <div class="search-title">
+                <h2>Find Service Companies</h2>
+                <span id="companyCount">0 companies</span>
+            </div>
+
+            <div class="filters">
+
+                <div class="search-box">
+                    <span>🔎</span>
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search company or service..."
+                    >
+                </div>
+
+                <select id="serviceFilter">
+                    <option value="">All Services</option>
+                    <option value="Plumbing">🔧 Plumbing</option>
+                    <option value="Electrical">⚡ Electrical</option>
+                    <option value="Painting">🎨 Painting</option>
+                    <option value="Carpentry">🪚 Carpentry</option>
+                    <option value="Cleaning">🧹 Cleaning</option>
+                    <option value="Home Repair">🏠 Home Repair</option>
+                </select>
+
+                <select id="ratingFilter">
+                    <option value="">Any Rating</option>
+                    <option value="4">⭐ 4.0+</option>
+                    <option value="4.5">⭐ 4.5+</option>
+                    <option value="4.8">⭐ 4.8+</option>
+                </select>
+
+                <select id="experienceFilter">
+                    <option value="">Any Experience</option>
+                    <option value="2">2+ Years</option>
+                    <option value="5">5+ Years</option>
+                    <option value="10">10+ Years</option>
+                </select>
+
+                <select id="sortFilter">
+                    <option value="recommended">Recommended</option>
+                    <option value="rating">Highest Rating</option>
+                    <option value="experience">Most Experienced</option>
+                    <option value="workers">Most Workers</option>
+                </select>
+
+            </div>
+
+        </section>
+
+        <section class="recommended-section">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Recommended For You</h2>
+                    <p>Trusted companies matching your needs</p>
+                </div>
+            </div>
+
+            <div id="recommendedList" class="company-grid"></div>
+
+        </section>
+
+        <section class="companies-section">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Verified Companies</h2>
+                    <p>Companies verified by our administration team</p>
+                </div>
+            </div>
+
+            <div id="companyList" class="company-grid">
+
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading verified companies...</p>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+</div>
+
+<!-- COMPANY DETAILS MODAL -->
+
+<div class="modal" id="companyModal">
+
+    <div class="modal-content company-modal">
+
+        <button class="close-btn" id="closeCompanyModal">×</button>
+
+        <div class="company-modal-header">
+
+            <div class="large-company-logo" id="modalLogo">A</div>
+
+            <div>
+                <div class="verified-label">✓ VERIFIED COMPANY</div>
+
+                <h2 id="modalCompanyName">
+                    Company Name
+                </h2>
+
+                <p id="modalLocation">
+                    📍 Location
+                </p>
+
+                <div class="modal-rating">
+                    ⭐ <strong id="modalRating">0.0</strong>
+                    <span id="modalReviews">(0 reviews)</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="company-stats">
+
+            <div>
+                <span>🏆</span>
+                <strong id="modalExperience">0</strong>
+                <small>Years Experience</small>
+            </div>
+
+            <div>
+                <span>👷</span>
+                <strong id="modalWorkers">0</strong>
+                <small>Total Workers</small>
+            </div>
+
+            <div>
+                <span>⭐</span>
+                <strong id="modalRating2">0.0</strong>
+                <small>Customer Rating</small>
+            </div>
+
+        </div>
+
+        <div class="modal-section">
+
+            <h3>Services Offered</h3>
+
+            <div id="modalServices" class="service-list"></div>
+
+        </div>
+
+        <div class="modal-section">
+
+            <h3>About Company</h3>
+
+            <p id="modalDescription">
+                Company description
+            </p>
+
+        </div>
+
+        <div class="modal-section">
+
+            <h3>Owner</h3>
+
+            <p id="modalOwner">Owner name</p>
+
+        </div>
+
+        <div class="modal-section">
+
+            <h3>Verified Customer Reviews</h3>
+
+            <div id="modalReviewPreview" class="review-preview" style="margin-bottom:8px;">
+                No reviews yet.
+            </div>
+
+            <!-- List of verified customer reviews with full descriptions -->
+            <div id="modalReviewsList" style="max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
+                <!-- Dynamically rendered -->
+            </div>
+
+        </div>
+
+        <div class="modal-actions">
+
+            <button
+                class="favorite-btn"
+                id="favoriteBtn"
+            >
+                ♡ Add to Favorites
+            </button>
+
+            <button
+                class="chat-action-btn"
+                id="modalChatBtn"
+            >
+                💬 Chat with Company
+            </button>
+
+            <button
+                class="primary-btn"
+                id="requestServiceBtn"
+            >
+                📸 Request Quote with Photo →
+            </button>
+
+        </div>
+
+    </div>
+</div>
+
+
+<!-- SERVICE REQUEST MODAL -->
+
+<div class="modal" id="requestModal">
+
+    <div class="modal-content request-modal">
+
+        <button class="close-btn" id="closeRequestModal">×</button>
+
+        <div class="request-header">
+            <div class="request-icon">🔧</div>
+            <div>
+                <h2>Request Home Service</h2>
+                <p id="requestCompanyName">
+                    Company Name
+                </p>
+            </div>
+        </div>
+
+        <form id="requestForm">
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label>Service Required</label>
+
+                    <select id="requestService" required>
+                        <option value="">Select Service</option>
+                        <option value="Plumbing">🔧 Plumbing</option>
+                        <option value="Electrical">⚡ Electrical</option>
+                        <option value="Painting">🎨 Painting</option>
+                        <option value="Carpentry">🪚 Carpentry</option>
+                        <option value="Cleaning">🧹 Cleaning</option>
+                        <option value="Home Repair">🏠 Home Repair</option>
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Request Type</label>
+
+                    <select id="requestPriority">
+
+                        <option value="normal">
+                            Normal
+                        </option>
+
+                        <option value="urgent">
+                            ⚠ Urgent
+                        </option>
+
+                        <option value="emergency">
+                            🚨 Emergency
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Describe Your Problem</label>
+
+                <textarea
+                    id="requestDescription"
+                    rows="5"
+                    placeholder="Example: Water pipe near my kitchen is damaged and leaking..."
+                    required
+                ></textarea>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Upload Damage Photos</label>
+
+                <div class="upload-box">
+
+                    <input
+                        type="file"
+                        id="requestPhotos"
+                        accept="image/jpeg,image/png,image/webp"
+                        multiple
+                    >
+
+                    <div>
+                        📷
+                        <strong>Add Photos</strong>
+                        <p>
+                            Upload photos showing the problem
+                        </p>
+                    </div>
+
+                </div>
+
+                <div id="photoPreview" class="photo-preview"></div>
+
+            </div>
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label>Preferred Start Date</label>
+
+                    <input
+                        type="date"
+                        id="preferredDate"
+                        required
+                    >
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Preferred Time</label>
+
+                    <input
+                        type="time"
+                        id="preferredTime"
+                    >
+
+                </div>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Service Address</label>
+
+                <textarea
+                    id="serviceAddress"
+                    rows="3"
+                    placeholder="Enter the address where the work is required"
+                    required
+                ></textarea>
+
+            </div>
+
+            <div class="request-note">
+
+                <strong>💡 Important</strong>
+
+                <p>
+                    The company will review your request and photos.
+                    They will decide the number of workers, estimated
+                    duration, work dates and cost before sending you
+                    a proposal.
+                </p>
+
+            </div>
+
+            <button
+                type="submit"
+                class="submit-request-btn"
+            >
+                Send Service Request
+            </button>
+
+        </form>
+
+    </div>
+</div>
+
+<!-- CHATBOT & MESSENGER MODAL -->
+<div class="modal" id="chatbotModal">
+    <div class="modal-content chatbot-modal-container">
+        <div class="chatbot-header">
+            <div class="chatbot-header-info">
+                <div class="chatbot-bot-avatar">🤖</div>
+                <div>
+                    <h3>Company Assistant & Live Chat</h3>
+                    <p>Select any verified company and chat or request quotations</p>
+                </div>
+            </div>
+            <button class="close-btn" id="closeChatbotModal">×</button>
+        </div>
+        <div class="chatbot-body">
+            <div class="chatbot-sidebar">
+                <div class="chat-search-wrap">
+                    <span>🔍</span>
+                    <input type="text" id="chatCompanySearch" placeholder="Search company...">
+                </div>
+                <div class="chat-company-list" id="chatCompanyList">
+                    <div class="loading-small">Loading companies...</div>
+                </div>
+            </div>
+            <div class="chatbot-chat-area">
+                <div class="chat-active-company" id="chatActiveCompanyBar">
+                    <div class="chat-active-info">
+                        <div class="chat-comp-avatar" id="chatActiveLogo">C</div>
+                        <div>
+                            <div class="chat-comp-name-row">
+                                <strong id="chatActiveName">Select a Company</strong>
+                                <span class="active-badge" id="chatActiveBadge">✓ Verified</span>
+                            </div>
+                            <small id="chatActiveMeta">Click a company on the left to start chatting</small>
+                        </div>
+                    </div>
+                    <div class="chat-active-actions">
+                        <button class="chat-shortcut-btn btn-chat-refresh" id="chatRefreshBtn" title="Refresh conversation immediately" onclick="refreshActiveChat()">
+                            🔄 Refresh
+                        </button>
+                        <button class="chat-shortcut-btn btn-chat-quote" id="chatRequestQuoteBtn" title="Request Quote with Photo">
+                            📸 Request Quote with Photo
+                        </button>
+                        <button class="chat-shortcut-btn btn-chat-delete" id="chatDeleteHistoryBtn" title="Delete All Chat Messages with this company" onclick="deleteActiveChatHistory()">
+                            🗑️ Delete Chat
+                        </button>
+                    </div>
+                </div>
+                <div class="chat-suggestion-chips" id="chatSuggestionChips">
+                    <button class="chip-btn" data-query="services">🛠️ Services Offered</button>
+                    <button class="chip-btn" data-query="workers">👷 Worker Team</button>
+                    <button class="chip-btn" data-query="pricing">💰 Price & Quotation</button>
+                    <button class="chip-btn" data-query="contact">📞 Contact Info</button>
+                    <button class="chip-btn" data-query="status">📋 Check My Quote Status</button>
+                </div>
+                <div class="chat-messages-container" id="chatMessages">
+                    <div class="chat-placeholder">
+                        <div class="chat-placeholder-icon">💬</div>
+                        <h4>Welcome to Company Live Chat</h4>
+                        <p>Select a company on the left to ask questions or submit damage photos for an instant quotation!</p>
+                    </div>
+                </div>
+                <form class="chat-input-bar" id="chatInputForm">
+                    <button type="button" class="chat-attach-btn" id="chatAttachPhotoBtn" title="Upload Photo for Quotation">
+                        📷
+                    </button>
+                    <input type="text" id="chatInputText" placeholder="Type your message or question..." autocomplete="off">
+                    <button type="submit" class="chat-send-btn" id="chatSendBtn">
+                        <span>Send</span> ➤
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MY SERVICE REQUESTS & TRACKING MODAL -->
+<div class="modal" id="myRequestsModal">
+    <div class="modal-content requests-modal-container">
+        <div class="requests-modal-header">
+            <div>
+                <h2 id="requestsModalTitle">📋 Service Requests Tracking</h2>
+                <p>Track your quotations, worker allocation, live daily attendance & progress, and completed archives</p>
+                <!-- Switcher Tabs -->
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button id="tabCurrentReqs" class="card-action-btn" style="background:#2563eb; color:#ffffff; padding:6px 14px; font-size:12px; border-radius:6px; cursor:pointer;" onclick="switchRequestsView('current')">
+                        ⚡ Current Ongoing Requests (<span id="tabCurrentReqsCount">0</span>)
+                    </button>
+                    <button id="tabCompletedReqs" class="card-action-btn" style="background:#f1f5f9; color:#475569; padding:6px 14px; font-size:12px; border-radius:6px; cursor:pointer;" onclick="switchRequestsView('completed')">
+                        📋 Completed Records (<span id="tabCompletedReqsCount">0</span>)
+                    </button>
+                </div>
+            </div>
+            <button class="close-btn" id="closeMyRequestsModal">×</button>
+        </div>
+        <div class="requests-modal-body" id="myRequestsContainer">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading your service requests...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- PHOTO LIGHTBOX MODAL -->
+<div class="lightbox-modal" id="lightboxModal">
+    <div class="lightbox-content">
+        <button class="lightbox-close" id="closeLightbox">×</button>
+        <img id="lightboxImage" src="" alt="Damage Inspection">
+        <p id="lightboxCaption"></p>
+    </div>
+</div>
+
+<!-- CUSTOMER WORK INSPECTION & SIGN-OFF MODAL -->
+<div class="modal" id="inspectionModal">
+    <div class="modal-content" style="max-width: 750px; border-radius: 16px; padding: 25px;">
+        <button class="close-btn" id="closeInspectionModal">×</button>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px;">
+            <div style="font-size:32px;">🔍</div>
+            <div>
+                <h2 style="font-size:20px; color:#0f172a;">On-Site Work Inspection & Sign-Off</h2>
+                <p style="font-size:13px; color:#64748b;">Verify the technician's completed repairs before issuing payment and warranty.</p>
+            </div>
+        </div>
+
+        <input type="hidden" id="inspectRequestId">
+
+        <!-- Before & After Comparison -->
+        <div style="margin-bottom:16px;">
+            <label style="font-size:13px; font-weight:700; color:#334155; display:block; margin-bottom:8px;">
+                📸 Before Repair vs. After Repair Proof Photos:
+            </label>
+            <div class="before-after-grid" id="inspectionPhotosGrid">
+                <!-- Dynamically loaded -->
+            </div>
+        </div>
+
+        <!-- Completion PIN -->
+        <div class="otp-security-box">
+            <div>
+                <small>YOUR 4-DIGIT ON-SITE VERIFICATION PIN</small>
+                <div class="otp-code-text" id="inspectOtpDisplay">----</div>
+            </div>
+            <p style="font-size:11px; color:#166534; max-width:280px;">
+                Provide this PIN to the technician or click Sign-Off below once you are satisfied with the repairs.
+            </p>
+        </div>
+
+        <!-- Inspection Checklist -->
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px; margin:15px 0;">
+            <strong style="font-size:13px; color:#0f172a; display:block; margin-bottom:8px;">Customer Satisfaction Checklist:</strong>
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#334155; margin-bottom:6px; cursor:pointer;">
+                <input type="checkbox" id="chkFunctionality" checked> Repaired fixture / service tested and functioning properly
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#334155; margin-bottom:6px; cursor:pointer;">
+                <input type="checkbox" id="chkCleanliness" checked> Technician cleaned up the work area before leaving
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#334155; cursor:pointer;">
+                <input type="checkbox" id="chkMaterials" checked> All agreed materials and scope completed
+            </label>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display:flex; gap:12px; margin-top:20px;">
+            <button class="confirm-quote-btn" style="flex:2; padding:12px;" onclick="confirmInspectionSignOff()">
+                ✅ Approve Work & Issue 30-Day Warranty →
+            </button>
+            <button class="chat-action-btn" style="flex:1; background:#fef2f2; color:#b91c1c; border-color:#fecaca;" onclick="toggleReworkForm()">
+                ⚠️ Request Free Rework
+            </button>
+        </div>
+
+        <!-- Rework Notes Form (Hidden by default) -->
+        <div id="reworkFormBox" style="display:none; margin-top:14px; background:#fff1f2; border:1px solid #fecdd3; border-radius:10px; padding:14px;">
+            <strong style="font-size:13px; color:#9f1239; display:block; margin-bottom:6px;">Report Incomplete Work / Defect:</strong>
+            <textarea id="reworkNotesInput" placeholder="Specify what was left unfinished, still leaking, or not functioning..." style="width:100%; padding:10px; border-radius:8px; border:1px solid #fda4af; font-size:13px; min-height:75px;"></textarea>
+            <button class="card-action-btn" style="background:#e11d48; margin-top:8px;" onclick="submitReworkRequest()">
+                Submit Rework Request to Company
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- PRINTABLE TAX INVOICE MODAL -->
+<div class="modal" id="taxInvoiceModal">
+    <div class="modal-content" style="max-width: 700px; border-radius: 16px; padding: 25px;">
+        <button class="close-btn" id="closeTaxInvoiceModal">×</button>
+        <div id="printableTaxInvoiceArea">
+            <!-- Dynamically rendered -->
+        </div>
+        <div style="display:flex; justify-content:flex-end; margin-top:16px; gap:10px;">
+            <button class="confirm-quote-btn" onclick="window.print()">
+                🖨️ Print / Download Invoice
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- FLOATING CHATBOT LAUNCHER -->
+<button class="floating-chat-fab" id="floatingChatFab" title="Chat with Companies">
+    <span class="fab-icon">💬</span>
+    <span class="fab-text">Chat with Company</span>
+    <span class="fab-badge" id="fabUnreadBadge" style="display:none;">0</span>
+</button>
+
+<!-- DAILY UPDATE COMPLAINT MODAL -->
+<div class="modal" id="dailyComplaintModal">
+    <div class="modal-content" style="max-width: 550px; border-radius: 16px; padding: 24px;">
+        <button class="close-btn" id="closeDailyComplaintModal" onclick="closeDailyComplaintModal()">×</button>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+            <span style="font-size:28px;">⚠️</span>
+            <div>
+                <h3 style="margin:0; color:#991b1b; font-size:18px;">Raise Complaint on Daily Work</h3>
+                <p style="margin:0; font-size:12px; color:#64748b;">Alert the company and assigned technician about work issues</p>
+            </div>
+        </div>
+
+        <input type="hidden" id="complaintRequestId">
+        <input type="hidden" id="complaintDayNumber">
+
+        <div style="margin-bottom:12px;">
+            <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">Complaint Category / Reason:</label>
+            <select id="complaintCategory" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">
+                <option value="technician">About Technician / Worker (Workmanship, Attendance, Behavior)</option>
+                <option value="quality">Quality of Product / Materials (Defective parts, Weak material)</option>
+                <option value="activity">Daily Activity of Work (Incomplete task, Damage to property)</option>
+                <option value="other">Other issue</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom:14px;">
+            <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">Describe the issue:</label>
+            <textarea id="complaintDescription" rows="3" placeholder="Please describe what was wrong so the company and technician can rectify it..." style="width:100%; padding:10px; border:1px solid #fda4af; border-radius:8px; font-size:13px;"></textarea>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+            <button class="card-action-btn" style="background:#f1f5f9; color:#475569;" onclick="closeDailyComplaintModal()">Cancel</button>
+            <button class="card-action-btn" style="background:#dc2626; color:#ffffff;" onclick="submitDailyComplaint()">Submit Complaint</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- CUSTOMER PROFILE MODAL -->
+<div class="modal" id="profileModal">
+    <div class="modal-content" style="max-width: 650px; border-radius: 20px; padding: 0; overflow: hidden;">
+        <div style="background: linear-gradient(135deg, #1e293b, #334155); padding: 30px 30px 25px; color: white;">
+            <button class="close-btn" id="closeProfileModal" style="color: white; top: 15px; right: 20px;" onclick="document.getElementById('profileModal').style.display='none'">×</button>
+            <div class="profile-header" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
+                <div class="profile-avatar-large" id="profileAvatar">C</div>
+                <div>
+                    <h2 style="margin: 0; font-size: 22px; font-weight: 800;" id="profileDisplayName">Customer</h2>
+                    <p style="margin: 4px 0 0; font-size: 13px; color: #94a3b8;">👤 Customer Profile · Domestic Services</p>
+                    <p style="margin: 4px 0 0; font-size: 11px; color: #64748b;" id="profileMemberSince">Member since 2026</p>
+                </div>
+            </div>
+        </div>
+        <div style="padding: 25px 30px 30px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                <div class="profile-field">
+                    <label>👤 Full Name</label>
+                    <input type="text" id="profileName" placeholder="Your full name">
+                </div>
+                <div class="profile-field">
+                    <label>📧 Email Address</label>
+                    <div class="profile-field-value" id="profileEmail">—</div>
+                </div>
+                <div class="profile-field">
+                    <label>📱 Phone Number</label>
+                    <input type="text" id="profilePhone" placeholder="Your phone number">
+                </div>
+                <div class="profile-field">
+                    <label>📍 Location</label>
+                    <input type="text" id="profileLocation" placeholder="Your city or area">
+                </div>
+                <div class="profile-field" style="grid-column: 1 / -1;">
+                    <label>🏠 Full Address</label>
+                    <input type="text" id="profileAddress" placeholder="House/flat no, street, landmark">
+                </div>
+                <div class="profile-field">
+                    <label>🏙️ City</label>
+                    <input type="text" id="profileCity" placeholder="City name">
+                </div>
+                <div class="profile-field">
+                    <label>🗺️ State</label>
+                    <input type="text" id="profileState" placeholder="State name">
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 22px; padding-top: 18px; border-top: 1px solid #e2e8f0;">
+                <button class="card-action-btn" style="background: #f1f5f9; color: #475569; padding: 10px 22px; border-radius: 10px; font-size: 13px;" onclick="document.getElementById('profileModal').style.display='none'">Cancel</button>
+                <button class="profile-save-btn" onclick="saveCustomerProfile()">💾 Save Profile</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CUSTOMER WALLET MODAL -->
+<div class="modal" id="walletModal">
+    <div class="modal-content" style="max-width: 800px; border-radius: 20px; padding: 0; overflow: hidden;">
+        <!-- Wallet Header -->
+        <div class="wallet-header">
+            <button class="close-btn" style="color: white; top: 15px; right: 20px;" onclick="document.getElementById('walletModal').classList.remove('show')">×</button>
+            <div class="wallet-header-content">
+                <div class="wallet-icon-big">💰</div>
+                <div>
+                    <h2>My Wallet</h2>
+                    <p style="opacity:0.8; font-size:13px;">Manage your balance & transactions</p>
+                </div>
+            </div>
+            <div class="wallet-balance-card">
+                <div class="wallet-balance-label">Available Balance</div>
+                <div class="wallet-balance-amount" id="walletBalanceDisplay">₹0.00</div>
+                <div class="wallet-balance-sub">Indian Rupees (INR)</div>
+            </div>
+        </div>
+
+        <div style="padding: 25px 30px 30px;">
+            <!-- Add Money Section -->
+            <div class="wallet-add-money-section">
+                <h3>💳 Add Demo Money</h3>
+                <div class="wallet-add-money-form">
+                    <div class="wallet-amount-input-wrap">
+                        <span class="wallet-currency-symbol">₹</span>
+                        <input type="number" id="addMoneyAmount" placeholder="Enter amount" min="1" max="100000" step="1">
+                    </div>
+                    <button class="wallet-add-btn" onclick="addMoneyToWallet()">
+                        <span class="wallet-add-btn-icon">+</span> Add Money
+                    </button>
+                </div>
+                <div class="wallet-quick-amounts">
+                    <button class="wallet-quick-btn" onclick="setQuickAmount(500)">₹500</button>
+                    <button class="wallet-quick-btn" onclick="setQuickAmount(1000)">₹1,000</button>
+                    <button class="wallet-quick-btn" onclick="setQuickAmount(2000)">₹2,000</button>
+                    <button class="wallet-quick-btn" onclick="setQuickAmount(5000)">₹5,000</button>
+                    <button class="wallet-quick-btn" onclick="setQuickAmount(10000)">₹10,000</button>
+                </div>
+            </div>
+
+            <!-- Payment Requests Section -->
+            <div class="wallet-section" id="paymentRequestsSection" style="display:none;">
+                <h3>🔔 Pending Payment Requests</h3>
+                <div id="paymentRequestsList" class="wallet-payment-requests-list"></div>
+            </div>
+
+            <!-- Transaction History -->
+            <div class="wallet-section">
+                <div class="wallet-section-header">
+                    <h3>📊 Transaction History</h3>
+                    <select id="txnFilterType" onchange="loadWalletTransactions()">
+                        <option value="all">All Transactions</option>
+                        <option value="credit">Credits Only</option>
+                        <option value="debit">Debits Only</option>
+                    </select>
+                </div>
+                <div id="walletTransactionsList" class="wallet-transactions-list">
+                    <div class="wallet-empty-state">
+                        <div style="font-size:40px; margin-bottom:10px;">📭</div>
+                        <p>No transactions yet. Add money to get started!</p>
+                    </div>
+                </div>
+                <div class="wallet-pagination" id="walletPagination" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- WALLET PAYMENT PROCESSING OVERLAY -->
+<div class="wallet-processing-overlay" id="walletProcessingOverlay" style="display:none;">
+    <div class="wallet-processing-card">
+        <div class="wallet-pay-anim">
+            <div class="wallet-processing-spinner"></div>
+            <div class="wallet-pay-pulse"></div>
+        </div>
+        <h3 id="walletProcessingTitle">Waiting for payment</h3>
+        <p id="walletProcessingMsg">Securely transferring funds...</p>
+        <div class="wallet-processing-steps" id="walletProcessingSteps">
+            <div class="wallet-step" data-step="1">Connecting</div>
+            <div class="wallet-step" data-step="2">Authorizing</div>
+            <div class="wallet-step" data-step="3">Confirming</div>
+            <div class="wallet-step" data-step="4">Updating wallet</div>
+        </div>
+        <div class="wallet-processing-bar">
+            <div class="wallet-processing-bar-fill" id="walletProcessingBarFill"></div>
+        </div>
+        <small style="color:#64748b;">Please do not close this window. This may take a few seconds.</small>
+    </div>
+</div>
+
+<!-- NOTIFICATIONS PANEL -->
+<div class="modal" id="notificationsModal">
+    <div class="modal-content" style="max-width: 550px; border-radius: 16px; padding: 24px;">
+        <button class="close-btn" onclick="document.getElementById('notificationsModal').classList.remove('show')">×</button>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px;">
+            <span style="font-size:28px;">🔔</span>
+            <div>
+                <h3 style="margin:0; font-size:18px; color:#0f172a;">Notifications</h3>
+                <p style="margin:0; font-size:12px; color:#64748b;">Payment requests & service updates</p>
+            </div>
+        </div>
+        <div id="notificationsList" class="notifications-list">
+            <div class="wallet-empty-state">
+                <div style="font-size:32px; margin-bottom:8px;">✅</div>
+                <p>You're all caught up!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="customer-wallet.js"></script>
+<script src="customer-dashboard.js"></script>
+
+</body>
+</html>

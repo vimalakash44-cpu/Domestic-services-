@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Your Company | Domestic Services</title>
+    <link rel="stylesheet" href="company-register.css">
+</head>
+<body ng-app="domesticServicesApp" ng-controller="GlobalPageController">
+
+<div class="page">
+    <div class="left-panel">
+        <div class="brand">Domestic<span>Services</span></div>
+        <div class="intro">
+            <p class="tag">PARTNER WITH US</p>
+            <h1>Grow your service business with us.</h1>
+            <p>
+                Register your company, showcase your services and connect
+                with customers looking for trusted professionals.
+            </p>
+        </div>
+
+        <div class="benefits">
+            <div class="benefit">
+                <div class="icon">✓</div>
+                <div>
+                    <h3>Reach More Customers</h3>
+                    <p>Get discovered by customers in your area.</p>
+                </div>
+            </div>
+
+            <div class="benefit">
+                <div class="icon">✓</div>
+                <div>
+                    <h3>Manage Your Workers</h3>
+                    <p>Organize your workforce and service requests.</p>
+                </div>
+            </div>
+
+            <div class="benefit">
+                <div class="icon">✓</div>
+                <div>
+                    <h3>Build Trust</h3>
+                    <p>Showcase your experience, ratings and services.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="right-panel">
+
+        <div class="form-header">
+            <p class="step">COMPANY REGISTRATION</p>
+            <h2>Tell us about your company</h2>
+            <p>
+                Complete your company profile. Your information will be
+                reviewed by our admin team before your company becomes visible.
+            </p>
+        </div>
+
+        <form id="companyForm" enctype="multipart/form-data">
+
+            <div class="section">
+                <h3>01 <span>Company Information</span></h3>
+                <div class="row">
+                    <div class="field">
+                        <label>Company Name</label>
+                        <input
+                            type="text"
+                            name="company_name"
+                            placeholder="Enter company name"
+                            required
+                        >
+                    </div>
+
+                    <div class="field">
+                        <label>Owner Name</label>
+                        <input
+                            type="text"
+                            name="owner_name"
+                            placeholder="Enter owner name"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="field">
+                        <label>Phone Number</label>
+                        <input
+                            type="tel"
+                            id="phone"
+                            name="phone"
+                            maxlength="10"
+                            placeholder="10-digit mobile number"
+                            required
+                        >
+                    </div>
+
+                    <div class="field">
+                        <label>City</label>
+                        <input
+                            type="text"
+                            name="city"
+                            placeholder="Enter your city"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Company Address</label>
+                    <textarea
+                        name="address"
+                        placeholder="Enter complete company address"
+                        required
+                    ></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>02 <span>Business Details</span></h3>
+
+                <div class="row">
+                    <div class="field">
+                        <label>Years of Experience</label>
+                        <input
+                            type="number"
+                            name="experience"
+                            min="0"
+                            placeholder="e.g. 5"
+                            required
+                        >
+                    </div>
+
+                    <div class="field">
+                        <label>Total Workers</label>
+                        <input
+                            type="number"
+                            name="total_workers"
+                            min="1"
+                            placeholder="e.g. 10"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Services Offered</label>
+
+                    <div class="services">
+
+                        <label class="service">
+                            <input
+                                type="checkbox"
+                                name="services"
+                                value="Plumbing"
+                            >
+                            <span>🔧</span>
+                            Plumbing
+                        </label>
+
+                        <label class="service">
+                            <input
+                                type="checkbox"
+                                name="services"
+                                value="Electrical"
+                            >
+                            <span>⚡</span>
+                            Electrical
+                        </label>
+
+                        <label class="service">
+                            <input
+                                type="checkbox"
+                                name="services"
+                                value="Painting"
+                            >
+                            <span>🎨</span>
+                            Painting
+                        </label>
+
+                        <label class="service">
+                            <input
+                                type="checkbox"
+                                name="services"
+                                value="Cleaning"
+                            >
+                            <span>🧹</span>
+                            Cleaning
+                        </label>
+
+                        <label class="service">
+                            <input
+                                type="checkbox"
+                                name="services"
+                                value="Carpentry"
+                            >
+                            <span>🪚</span>
+                            Carpentry
+                        </label>
+
+                        <label class="service">
+                            <input
+                                type="checkbox"
+                                name="services"
+                                value="Home Repair"
+                            >
+                            <span>🏠</span>
+                            Home Repair
+                        </label>
+
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Company Description</label>
+                    <textarea
+                        name="description"
+                        rows="4"
+                        placeholder="Briefly describe your company and the services you provide..."
+                        required
+                    ></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>03 <span>Verification</span></h3>
+
+                <div class="upload-box">
+                    <div class="upload-icon">↑</div>
+                    <div>
+                        <h4>Upload Verification Document</h4>
+                        <p>
+                            Upload a valid company/business document.
+                            PDF, JPG or PNG · Maximum 5 MB
+                        </p>
+                    </div>
+
+                    <input
+                        type="file"
+                        id="verification_document"
+                        name="verification_document"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        required
+                    >
+                </div>
+
+                <p class="verification-note">
+                    🔒 Your document will be securely reviewed by the admin
+                    team and will not be publicly displayed.
+                </p>
+            </div>
+
+            <div id="message"></div>
+
+            <button type="submit">
+                Submit Company Registration
+                <span>→</span>
+            </button>
+
+            <p class="footer-note">
+                By submitting, you agree that the information provided is
+                accurate and can be verified by the administrator.
+            </p>
+
+        </form>
+    </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular.min.js"></script>
+<script src="angular-integration.js"></script>
+<script src="company-register.js"></script>
+</body>
+</html>

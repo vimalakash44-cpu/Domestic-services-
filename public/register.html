@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Create Account | Domestic Services</title>
+    <link rel="stylesheet" href="register.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular.min.js"></script>
+    <script src="angular-integration.js"></script>
+</head>
+<body ng-app="domesticServicesApp" ng-controller="GlobalPageController">
+<div class="container">
+    <div class="left-panel">
+        <div class="brand">
+            <div class="logo">DS</div>
+            <h1>
+                Domestic<br>
+                Services
+            </h1>
+        </div>
+        <div class="left-content">
+            <h2>
+                Your home.<br>
+                Our professionals.
+            </h2>
+            <p>
+                Connect with reliable service companies
+                for plumbing, electrical, repair and
+                other household services.
+            </p>
+        </div>
+        <div class="footer-text">
+            © 2026 Domestic & Household Services
+        </div>
+    </div>
+    <div class="right-panel">
+        <div class="register-box">
+            <h2>Create Account</h2>
+            <p class="subtitle">
+                Join Domestic & Household Services
+            </p>
+            <form id="registerForm">
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input
+                        type="text"
+                        id="name"
+                        placeholder="Enter your full name"
+                        required
+                    >
+                </div>
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input
+                        type="email"
+                        id="email"
+                        placeholder="Enter your email"
+                        required
+                    >
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <div class="password-box">
+                        <input
+                            type="password"
+                            id="password"
+                            placeholder="Create a password"
+                            required
+                        >
+                        <button
+                            type="button"
+                            id="togglePassword">
+                            Show
+                        </button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Confirm Password</label>
+                    <input
+                        type="password"
+                        id="confirmPassword"
+                        placeholder="Confirm your password"
+                        required
+                    >
+                </div>
+                <div class="input-group">
+                    <label>Register As</label>
+                    <select id="role" required>
+                        <option value="">
+                            Select account type
+                        </option>
+                        <option value="customer">
+                            Customer
+                        </option>
+                        <option value="company">
+                            Service Company
+                        </option>
+                    </select>
+                </div>
+                <p id="message"></p>
+                <button
+                    type="submit"
+                    class="register-btn">
+                    Create Account
+                </button>
+            </form>
+            <div class="login-link">
+                Already have an account?
+                <a href="login.html">
+                    Sign In
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="register.js"></script>
+</body>
+</html>

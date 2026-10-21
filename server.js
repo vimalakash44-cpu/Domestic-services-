@@ -1,0 +1,58 @@
+const express = require("express");
+const mongoose = require("mongoose");
+const path = require("path");
+
+const authRoutes = require("./routes/auth");
+const companyRoutes = require("./routes/company");
+const companyRequestsRoutes = require("./routes/companyRequests");
+const customerRoutes = require("./routes/customer");
+const adminRoutes = require("./routes/admin");
+const chatRoutes = require("./routes/chat");
+const workerRoutes = require("./routes/worker");
+const complaintRoutes = require("./routes/complaint");
+const walletRoutes = require("./routes/wallet");
+
+const app = express();
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use(express.static(path.join(__dirname, "public")));
+app.use("/uploads", express.static(path.join(__dirname, "public", "uploads")));
+
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/domestic_services";
+
+mongoose.connect(MONGODB_URI)
+    .then(() => {
+        console.log("MongoDB connected");
+    })
+    .catch((error) => {
+        console.error("MongoDB connection error:", error);
+    });
+
+app.use("/api/auth", authRoutes);
+app.use("/api/company", companyRoutes);
+app.use("/api/company", companyRequestsRoutes);
+app.use("/api/customer", customerRoutes);
+app.use("/api/worker", workerRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/chat", chatRoutes);
+app.use("/api/complaint", complaintRoutes);
+app.use("/api/wallet", walletRoutes);
+
+app.use((req, res) => {
+    if (req.path.startsWith("/api/")) {
+        return res.status(404).json({
+            success: false,
+            message: "API route not found."
+        });
+    }
+
+    res.status(404).send("Page not found.");
+});
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
+});

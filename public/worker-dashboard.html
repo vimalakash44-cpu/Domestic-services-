@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technician Dashboard | Domestic Services</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="worker-dashboard.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular.min.js"></script>
+    <script src="angular-integration.js"></script>
+</head>
+<body ng-app="domesticServicesApp" ng-controller="GlobalPageController">
+
+    <!-- Navigation Bar -->
+    <header class="top-nav">
+        <div class="nav-brand">
+            <div class="brand-badge">DS</div>
+            <div>
+                <h2>Field Technician Portal</h2>
+                <span class="sub-brand" id="companyAffiliation">Domestic Services Partner</span>
+            </div>
+        </div>
+        <div class="nav-user">
+            <div class="user-info">
+                <span class="user-name" id="workerName">Technician</span>
+                <span class="worker-rating-badge" id="workerHeaderRating"><i class="fas fa-star"></i> 5.0</span>
+            </div>
+            <button class="logout-btn" id="logoutBtn" title="Sign Out">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </header>
+
+    <main class="dashboard-container">
+        <!-- Technician Quick Profile Card -->
+        <section class="profile-strip">
+            <div class="profile-card">
+                <div class="avatar-circle" id="workerAvatar">W</div>
+                <div class="profile-details">
+                    <h3 id="workerCardName">Technician</h3>
+                    <p id="workerCardPhone"><i class="fas fa-phone"></i> Loading...</p>
+                    <div class="skills-tags" id="workerSkillsTags"></div>
+                </div>
+                <div class="profile-stats">
+                    <div class="stat-box">
+                        <span class="stat-number" id="activeJobsCount">0</span>
+                        <span class="stat-label">Active Jobs</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number" id="completedJobsCount">0</span>
+                        <span class="stat-label">Completed</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number" id="ratingDisplay">5.0 ★</span>
+                        <span class="stat-label" id="reviewCountDisplay">(0 Reviews)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation Tabs -->
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="jobsTab"><i class="fas fa-hard-hat"></i> Assigned Jobs</button>
+            <button class="tab-btn" data-tab="reviewsTab"><i class="fas fa-star"></i> Customer Reviews</button>
+            <button class="tab-btn" data-tab="complaintsTab"><i class="fas fa-exclamation-circle"></i> Complaints</button>
+            <button class="tab-btn" data-tab="leaveTab"><i class="fas fa-calendar-times"></i> Leave Records</button>
+        </div>
+
+        <!-- TAB 1: Assigned Jobs -->
+        <section id="jobsTab" class="tab-content active">
+            <div class="section-header">
+                <div>
+                    <h2>My Assigned Service Jobs</h2>
+                    <p class="section-sub">Check in on site, log daily progress, and add van-stock or shop-bought parts.</p>
+                </div>
+                <div class="filter-controls">
+                    <button class="filter-btn active" data-filter="active">In Progress / Allocated</button>
+                    <button class="filter-btn" data-filter="all">All Jobs</button>
+                </div>
+            </div>
+
+            <div class="jobs-grid" id="jobsGrid">
+                <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading assigned jobs...</div>
+            </div>
+        </section>
+
+        <!-- TAB 2: Customer Reviews -->
+        <section id="reviewsTab" class="tab-content">
+            <div class="section-header">
+                <div>
+                    <h2>Customer Reviews & Ratings</h2>
+                    <p class="section-sub">Direct feedback from homeowners on your craftsmanship, punctuality, and behavior.</p>
+                </div>
+                <div class="rating-overview-pill" id="ratingSummaryPill">
+                    <i class="fas fa-award"></i> Overall Rating: <strong>5.0 / 5.0</strong>
+                </div>
+            </div>
+            <div class="reviews-list" id="reviewsList">
+                <div class="empty-state">No reviews recorded yet. Complete jobs to receive reviews.</div>
+            </div>
+        </section>
+
+        <!-- TAB: Customer Complaints -->
+        <section id="complaintsTab" class="tab-content">
+            <div class="section-header">
+                <div>
+                    <h2>Customer Complaints</h2>
+                    <p class="section-sub">Issues reported after ratings. Fix these before the next visit when possible.</p>
+                </div>
+            </div>
+            <div class="reviews-list" id="complaintsList">
+                <div class="empty-state">No complaints on file.</div>
+            </div>
+        </section>
+
+        <!-- TAB 3: Leave Records -->
+        <section id="leaveTab" class="tab-content">
+            <div class="section-header">
+                <div>
+                    <h2>Leave & Unavailability</h2>
+                    <p class="section-sub">Notify your company if you cannot work on specific dates so a replacement can be arranged.</p>
+                </div>
+                <button class="btn-primary" id="openGeneralLeaveBtn"><i class="fas fa-plus"></i> Request Leave</button>
+            </div>
+            <div class="leave-records-table" id="leaveRecordsContainer">
+                <div class="empty-state">No leave applications on file.</div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL 1: Daily Work Log Modal -->
+    <div class="modal-overlay" id="dailyLogModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-calendar-check"></i> Post Daily Work Progress</h3>
+                <button class="close-modal-btn" onclick="closeModal('dailyLogModal')">&times;</button>
+            </div>
+            <form id="dailyLogForm">
+                <input type="hidden" id="dailyLogReqId">
+                <div class="form-group">
+                    <label>Work Date</label>
+                    <input type="date" id="dailyLogDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Day Number</label>
+                    <input type="number" id="dailyLogDayNumber" min="1" max="100" value="1" required>
+                    <small class="hint">E.g., Day 1 for foundation/prep, Day 2 for fitting, etc.</small>
+                </div>
+                <div class="form-group">
+                    <label>Work Completed Description</label>
+                    <textarea id="dailyLogWorkDone" rows="4" placeholder="Detail the exact tasks performed today (e.g., Removed damaged pipe, applied sealing primer, laid 30 ceramic tiles)..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Work Site Photo (Optional)</label>
+                    <input type="file" id="dailyLogPhoto" accept="image/*">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('dailyLogModal')">Cancel</button>
+                    <button type="submit" class="btn-primary"><i class="fas fa-upload"></i> Post Work Log</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Van stock + local shop purchase -->
+    <div class="modal-overlay" id="materialReqModal">
+        <div class="modal-content" style="max-width:640px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-boxes"></i> Parts & Materials</h3>
+                <button class="close-modal-btn" onclick="closeModal('materialReqModal')">&times;</button>
+            </div>
+            <div class="modal-body-scroll">
+                <div class="notice-box">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Pick a part from van stock. If it is not listed, add the product you bought at a hardware shop with the bill amount.</span>
+                </div>
+
+                <div class="existing-requisitions">
+                    <h4>Already used on this job:</h4>
+                    <div id="existingMaterialsList" class="materials-mini-list">
+                        <em>No parts logged yet.</em>
+                    </div>
+                </div>
+
+                <hr class="modal-divider">
+
+                <h4>Van stock (tap to add)</h4>
+                <div id="partsCatalogGrid" class="parts-catalog-grid"></div>
+
+                <div class="form-row" id="vanQtyRow" style="display:none; margin-top:8px;">
+                    <div class="form-group flex-2">
+                        <label>Selected part</label>
+                        <input type="text" id="vanSelectedName" readonly>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Quantity</label>
+                        <input type="text" id="vanQuantity" placeholder="e.g. 2 pcs">
+                    </div>
+                </div>
+                <div class="modal-actions" id="vanAddActions" style="display:none; padding:0 0 12px;">
+                    <button type="button" class="btn-primary" onclick="submitVanStockPart()">
+                        <i class="fas fa-plus"></i> Add from van stock
+                    </button>
+                </div>
+
+                <hr class="modal-divider">
+
+                <h4>Not in stock? Log a shop purchase</h4>
+                <form id="materialReqForm">
+                    <input type="hidden" id="materialReqJobId">
+                    <div class="form-row">
+                        <div class="form-group flex-2">
+                            <label>Product name</label>
+                            <input type="text" id="matItemName" placeholder="e.g. 20mm brass angle valve" required>
+                        </div>
+                        <div class="form-group flex-1">
+                            <label>Quantity</label>
+                            <input type="text" id="matQuantity" placeholder="e.g. 2 pcs" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group flex-2">
+                            <label>Hardware shop</label>
+                            <input type="text" id="matShopName" placeholder="e.g. Sri Murugan Hardware">
+                        </div>
+                        <div class="form-group flex-1">
+                            <label>Price paid ($ / unit)</label>
+                            <input type="number" id="matUnitPrice" min="0" step="0.01" placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Used for</label>
+                        <input type="text" id="matPurpose" placeholder="e.g. Replaced leaking bathroom valve">
+                    </div>
+                    <div class="form-group">
+                        <label>Bill / receipt photo (optional)</label>
+                        <input type="file" id="matReceipt" accept="image/*">
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" onclick="closeModal('materialReqModal')">Close</button>
+                        <button type="submit" class="btn-primary"><i class="fas fa-store"></i> Save shop purchase</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Submit Work / Completion Modal -->
+    <div class="modal-overlay" id="submitWorkModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-check-circle"></i> Complete & Submit Service Job</h3>
+                <button class="close-modal-btn" onclick="closeModal('submitWorkModal')">&times;</button>
+            </div>
+            <form id="submitWorkForm">
+                <input type="hidden" id="submitWorkReqId">
+                <div class="form-group">
+                    <label>Completion Notes & Handover Summary</label>
+                    <textarea id="submitWorkNotes" rows="3" placeholder="Confirm that all repair/installation work is tested, debris cleared, and customer demonstrated the results..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Completed Work Proof Photos (Up to 5)</label>
+                    <input type="file" id="submitWorkPhotos" accept="image/*" multiple>
+                    <small class="hint">Upload crisp photos showing the finished repair or installation.</small>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('submitWorkModal')">Cancel</button>
+                    <button type="submit" class="btn-success"><i class="fas fa-file-signature"></i> Finalize Work</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: Leave Request Modal -->
+    <div class="modal-overlay" id="leaveModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-calendar-times"></i> Request Leave / Absence</h3>
+                <button class="close-modal-btn" onclick="closeModal('leaveModal')">&times;</button>
+            </div>
+            <form id="leaveForm">
+                <input type="hidden" id="leaveJobId">
+                <div class="form-group">
+                    <label>Leave Date</label>
+                    <input type="date" id="leaveDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Reason for Absence</label>
+                    <textarea id="leaveReason" rows="3" placeholder="e.g., Medical Emergency / Severe Fever / Urgent family requirement..." required></textarea>
+                </div>
+                <div class="notice-box warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Submitting this request will automatically alert your company so they can arrange a replacement technician for any assigned sites.</span>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('leaveModal')">Cancel</button>
+                    <button type="submit" class="btn-warning"><i class="fas fa-paper-plane"></i> Apply for Leave</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="worker-dashboard.js"></script>
+</body>
+</html>
