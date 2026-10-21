@@ -20,6 +20,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(path.join(__dirname, "public", "uploads")));
 
+// Root route: redirect to login page
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "login.html"));
+});
+
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/domestic_services";
 
 mongoose.connect(MONGODB_URI)
