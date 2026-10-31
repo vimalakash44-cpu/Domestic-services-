@@ -1,3 +1,37 @@
+
+// ==========================================
+// WORKER LIVE ON-SITE WORKING TIMER & SESSIONS
+// ==========================================
+let companyTimerTicker = null;
+
+function formatElapsedTimer(seconds) {
+    if (isNaN(seconds) || seconds < 0) seconds = 0;
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    const pad = n => String(n).padStart(2, "0");
+    return `${pad(h)}:${pad(m)}:${pad(s)}`;
+}
+
+function updateLiveWorkerTimers() {
+    const timerEls = document.querySelectorAll(".live-worker-timer[data-checkin]");
+    if (!timerEls || timerEls.length === 0) return;
+    const now = Date.now();
+    timerEls.forEach(el => {
+        const checkInIso = el.getAttribute("data-checkin");
+        if (!checkInIso) return;
+        const checkInMs = new Date(checkInIso).getTime();
+        if (isNaN(checkInMs)) return;
+        const diffSec = Math.max(0, Math.floor((now - checkInMs) / 1000));
+        el.textContent = formatElapsedTimer(diffSec);
+    });
+}
+
+if (!window._companyTimerTickerInitialized) {
+    window._companyTimerTickerInitialized = true;
+    setInterval(updateLiveWorkerTimers, 1000);
+}
+
 const token=localStorage.getItem("token");
 if(!token)window.location.href="login.html";
 
@@ -559,14 +593,85 @@ function renderReqOverviewColumn(req){
         `;
     }
 
-    if(req.time_tracking && (req.time_tracking.check_in_time || req.time_tracking.check_out_time)){
-        const inTime = req.time_tracking.check_in_time ? new Date(req.time_tracking.check_in_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "None";
-        const outTime = req.time_tracking.check_out_time ? new Date(req.time_tracking.check_out_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Active";
-        html += `
-            <div style="background:#f0fdf4; color:#166534; padding:6px 10px; border-radius:6px; font-size:11px; border-left:3px solid #22c55e;">
-                ⏱️ <strong>Attendance:</strong> Check-In: <strong>${inTime}</strong> | Check-Out: <strong>${outTime}</strong> ${req.time_tracking.total_minutes ? `(${req.time_tracking.total_minutes}m)` : ''}
-            </div>
-        `;
+    // Live Worker Timers & Completed Shift Work History
+    if(req.assigned_workers && req.assigned_workers.length > 0){
+        const onSiteWorkers = req.assigned_workers.filter(w => w.on_site && w.check_in_time);
+        const hasHistory = req.assigned_workers.some(w => (w.work_sessions && w.work_sessions.length > 0) || w.check_out_time);
+
+        if(onSiteWorkers.length > 0 || hasHistory){
+            html += `
+                <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:8px 10px; display:flex; flex-direction:column; gap:6px; border-left:4px solid #16a34a;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-weight:700; color:#15803d; font-size:11.5px;">
+                        <span>⏱️ WORKER ON-SITE TIMERS & ATTENDANCE</span>
+                        ${onSiteWorkers.length > 0 ? `<span style="background:#dcfce7; color:#15803d; padding:2px 7px; border-radius:10px; font-size:10px; border:1px solid #86efac; animation:pulse 1.5s infinite;">● ${onSiteWorkers.length} Worker(s) Active</span>` : ''}
+                    </div>
+            `;
+
+            // Active timers for workers currently checked in
+            onSiteWorkers.forEach(w => {
+                const checkInDate = new Date(w.check_in_time);
+                const checkInTimeStr = checkInDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const checkInDateStr = checkInDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+                const elapsedSec = Math.max(0, Math.floor((Date.now() - checkInDate.getTime()) / 1000));
+                
+                html += `
+                    <div style="background:#ffffff; border:1px solid #86efac; border-radius:6px; padding:6px 8px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <strong style="color:#0f172a; font-size:12px;">👷 ${escapeHtml(w.name || "Technician")}</strong>
+                            <div style="color:#64748b; font-size:10.5px; margin-top:2px;">
+                                Checked in: <strong>${checkInTimeStr}</strong> on <strong>${checkInDateStr}</strong>
+                            </div>
+                        </div>
+                        <div style="text-align:right;">
+                            <span class="live-worker-timer" data-checkin="${checkInDate.toISOString()}" style="display:inline-block; font-family:monospace, ui-monospace, sans-serif; font-size:13px; font-weight:800; color:#16a34a; background:#f0fdf4; padding:3px 8px; border-radius:5px; border:1px solid #bbf7d0; letter-spacing:0.5px;">
+                                ${formatElapsedTimer(elapsedSec)}
+                            </span>
+                            <div style="color:#15803d; font-size:9.5px; font-weight:700; text-transform:uppercase; margin-top:2px;">● Working Now</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Completed work sessions after checkout: displays duration (hours/minutes) and date
+            req.assigned_workers.forEach(w => {
+                const sessions = w.work_sessions || [];
+                if(sessions.length > 0){
+                    sessions.slice(-3).reverse().forEach(s => {
+                        const inStr = s.check_in_time ? new Date(s.check_in_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                        const outStr = s.check_out_time ? new Date(s.check_out_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                        const timeRange = (inStr && outStr) ? ` (${inStr} - ${outStr})` : '';
+                        html += `
+                            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:5px 8px; font-size:11px; color:#334155; display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <strong>👷 ${escapeHtml(w.name || "Technician")}</strong>: Worked <strong style="color:#0284c7;">${escapeHtml(s.duration_text || Math.round(s.duration_seconds / 60) + " mins")}</strong>${timeRange}
+                                </div>
+                                <span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:600;">
+                                    📅 ${escapeHtml(s.date || (s.check_out_time ? new Date(s.check_out_time).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Today"))}
+                                </span>
+                            </div>
+                        `;
+                    });
+                } else if(!w.on_site && w.check_out_time && w.check_in_time){
+                    // Fallback for previous single checkout records
+                    const diffSec = Math.max(1, Math.round((new Date(w.check_out_time) - new Date(w.check_in_time)) / 1000));
+                    const mins = Math.max(1, Math.round(diffSec / 60));
+                    const outDateStr = new Date(w.check_out_time).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+                    const outTimeStr = new Date(w.check_out_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    html += `
+                        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:5px 8px; font-size:11px; color:#334155; display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <strong>👷 ${escapeHtml(w.name || "Technician")}</strong>: Completed shift (Worked <strong style="color:#0284c7;">${mins} mins</strong>)
+                            </div>
+                            <span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:600;">
+                                📅 ${outDateStr} ${outTimeStr}
+                            </span>
+                        </div>
+                    `;
+                }
+            });
+
+            html += `</div>`;
+        }
     }
 
     if(req.material_requisitions && req.material_requisitions.length > 0){

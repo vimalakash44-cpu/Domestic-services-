@@ -200,7 +200,20 @@ const serviceRequestSchema = new mongoose.Schema(
                 },
                 last_check_in_time: {
                     type: Date
-                }
+                },
+                total_worked_seconds: {
+                    type: Number,
+                    default: 0
+                },
+                work_sessions: [
+                    {
+                        check_in_time: { type: Date, required: true },
+                        check_out_time: { type: Date },
+                        duration_seconds: { type: Number, default: 0 },
+                        duration_text: { type: String, default: "" },
+                        date: { type: String, default: "" }
+                    }
+                ]
             }
         ],
         // Worker Replacements & Leave Tracking

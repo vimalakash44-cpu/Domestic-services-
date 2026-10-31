@@ -305,14 +305,17 @@ router.post("/jobs/:id/check-in", authMiddleware, requireWorker, async (req, res
         const assignment = serviceReq.assigned_workers.find(
             w => String(w.worker_id) === String(req.user.id)
         );
+        const now = new Date();
         assignment.on_site = true;
-        assignment.check_in_time = new Date();
+        assignment.check_in_time = now;
         assignment.check_out_time = undefined;
         assignment.current_check_in = true;
-        assignment.last_check_in_time = new Date();
+        assignment.last_check_in_time = now;
+
+        assignment.work_sessions = assignment.work_sessions || [];
 
         serviceReq.time_tracking = serviceReq.time_tracking || {};
-        serviceReq.time_tracking.check_in_time = assignment.check_in_time;
+        serviceReq.time_tracking.check_in_time = now;
 
         if (serviceReq.status === "workers_assigned" || serviceReq.status === "rework_needed") {
             serviceReq.status = "in_progress";
@@ -321,7 +324,7 @@ router.post("/jobs/:id/check-in", authMiddleware, requireWorker, async (req, res
         await serviceReq.save();
         res.json({
             success: true,
-            message: "Checked in at the job site.",
+            message: "Checked in at the job site. Timer is now running.",
             check_in_time: assignment.check_in_time,
             status: serviceReq.status
         });
@@ -346,22 +349,54 @@ router.post("/jobs/:id/check-out", authMiddleware, requireWorker, async (req, re
             });
         }
 
+        const now = new Date();
+        const checkInDate = new Date(assignment.check_in_time);
+        const durationSec = Math.max(1, Math.round((now.getTime() - checkInDate.getTime()) / 1000));
+        const durationMin = Math.max(1, Math.round(durationSec / 60));
+
+        let durationText = "";
+        const hours = Math.floor(durationSec / 3600);
+        const mins = Math.floor((durationSec % 3600) / 60);
+        const secs = durationSec % 60;
+        if (hours > 0) {
+            durationText = `${hours} hr${hours > 1 ? "s" : ""} ${mins} min${mins !== 1 ? "s" : ""}`;
+        } else if (mins > 0) {
+            durationText = `${mins} min${mins !== 1 ? "s" : ""}` + (secs > 0 ? ` ${secs} sec` : "");
+        } else {
+            durationText = `${secs} sec`;
+        }
+
+        const dateStr = now.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric"
+        });
+
         assignment.on_site = false;
-        assignment.check_out_time = new Date();
+        assignment.check_out_time = now;
         assignment.current_check_in = false;
-        const minutes = Math.max(
-            1,
-            Math.round((assignment.check_out_time - new Date(assignment.check_in_time)) / 60000)
-        );
+        assignment.total_worked_seconds = (assignment.total_worked_seconds || 0) + durationSec;
+
+        assignment.work_sessions = assignment.work_sessions || [];
+        assignment.work_sessions.push({
+            check_in_time: checkInDate,
+            check_out_time: now,
+            duration_seconds: durationSec,
+            duration_text: durationText,
+            date: dateStr
+        });
+
         serviceReq.time_tracking = serviceReq.time_tracking || {};
-        serviceReq.time_tracking.check_out_time = assignment.check_out_time;
-        serviceReq.time_tracking.total_minutes = (serviceReq.time_tracking.total_minutes || 0) + minutes;
+        serviceReq.time_tracking.check_out_time = now;
+        serviceReq.time_tracking.total_minutes = (serviceReq.time_tracking.total_minutes || 0) + durationMin;
 
         await serviceReq.save();
         res.json({
             success: true,
-            message: `Checked out. Time on site: ${minutes} minute(s).`,
-            minutes_on_site: minutes
+            message: `Checked out successfully. Time worked: ${durationText}.`,
+            minutes_on_site: durationMin,
+            duration_text: durationText,
+            date: dateStr
         });
     } catch (err) {
         console.error("Worker check-out error:", err);

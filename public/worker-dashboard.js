@@ -1,3 +1,35 @@
+
+// ==========================================
+// WORKER ON-SITE LIVE WORKING TIMER TICKER
+// ==========================================
+function formatElapsedWorkerTimer(seconds) {
+    if (isNaN(seconds) || seconds < 0) seconds = 0;
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    const pad = n => String(n).padStart(2, "0");
+    return `${pad(h)}:${pad(m)}:${pad(s)}`;
+}
+
+function updateWorkerActiveTimers() {
+    const timerEls = document.querySelectorAll(".worker-live-session-timer[data-checkin]");
+    if (!timerEls || timerEls.length === 0) return;
+    const now = Date.now();
+    timerEls.forEach(el => {
+        const checkInIso = el.getAttribute("data-checkin");
+        if (!checkInIso) return;
+        const checkInMs = new Date(checkInIso).getTime();
+        if (isNaN(checkInMs)) return;
+        const diffSec = Math.max(0, Math.floor((now - checkInMs) / 1000));
+        el.textContent = formatElapsedWorkerTimer(diffSec);
+    });
+}
+
+if (!window._workerTimerTickerInitialized) {
+    window._workerTimerTickerInitialized = true;
+    setInterval(updateWorkerActiveTimers, 1000);
+}
+
 // Field Technician Dashboard Client Logic
 // Browser Back Arrow (<-) handler: navigate to login page and clear all fields
 window.history.pushState(null, "", window.location.href);
@@ -329,7 +361,23 @@ function renderJobsList() {
                     <span class="badge badge-${job.status}">${job.status.replace('_', ' ')}</span>
                 </div>
 
-                ${onSite ? '<div class="on-site-banner"><i class="fas fa-map-marker-alt"></i> You are checked in on site</div>' : ''}
+                ${onSite && me && me.check_in_time ? `
+                    <div class="on-site-banner" style="display:flex; justify-content:space-between; align-items:center; background:#ecfeff; border:1.5px solid #06b6d4; color:#0e7490; border-radius:8px; padding:8px 12px; margin-bottom:12px;">
+                        <div>
+                            <i class="fas fa-map-marker-alt" style="color:#0891b2; margin-right:6px;"></i>
+                            <strong>Checked In On Site</strong>
+                            <div style="font-size:0.75rem; color:#0e7490; margin-top:2px;">
+                                Started: ${new Date(me.check_in_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                        </div>
+                        <div style="text-align:right;">
+                            <span class="worker-live-session-timer" data-checkin="${new Date(me.check_in_time).toISOString()}" style="font-family:monospace, ui-monospace, sans-serif; font-size:1rem; font-weight:800; background:#ffffff; color:#0891b2; padding:3px 9px; border-radius:6px; border:1px solid #a5f3fc; display:inline-block;">
+                                ${formatElapsedWorkerTimer(Math.max(0, Math.floor((Date.now() - new Date(me.check_in_time).getTime()) / 1000)))}
+                            </span>
+                            <div style="font-size:0.7rem; font-weight:700; color:#0891b2; text-transform:uppercase; margin-top:2px;">● Timer Running</div>
+                        </div>
+                    </div>
+                ` : (onSite ? '<div class="on-site-banner"><i class="fas fa-map-marker-alt"></i> You are checked in on site</div>' : '')}
 
                 <div class="date-window-box">
                     <i class="fas fa-calendar-alt" style="color:var(--primary); margin-right:6px;"></i>
