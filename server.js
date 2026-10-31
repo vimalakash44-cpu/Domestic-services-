@@ -1,6 +1,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
+const bcrypt = require("bcryptjs");
+const User = require("./models/User");
 
 const authRoutes = require("./routes/auth");
 const companyRoutes = require("./routes/company");
@@ -27,9 +29,32 @@ app.get("/", (req, res) => {
 
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/domestic_services";
 
+// Helper to ensure the default admin user exists whenever the app connects to the database
+async function seedDefaultAdmin() {
+    try {
+        const existingAdmin = await User.findOne({ email: "admin@domesticservices.com" });
+        if (!existingAdmin) {
+            const hashedPassword = await bcrypt.hash("Admin@123", 10);
+            const admin = new User({
+                name: "System Admin",
+                email: "admin@domesticservices.com",
+                password: hashedPassword,
+                role: "admin"
+            });
+            await admin.save();
+            console.log("Default admin account created: admin@domesticservices.com");
+        } else {
+            console.log("Admin account verified in database.");
+        }
+    } catch (err) {
+        console.error("Error seeding default admin:", err.message);
+    }
+}
+
 mongoose.connect(MONGODB_URI)
-    .then(() => {
+    .then(async () => {
         console.log("MongoDB connected");
+        await seedDefaultAdmin();
     })
     .catch((error) => {
         console.error("MongoDB connection error:", error);
