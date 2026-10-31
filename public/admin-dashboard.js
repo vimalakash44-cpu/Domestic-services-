@@ -4,9 +4,37 @@ if (!token) {
     window.location.href = "login.html";
 }
 
-// Browser Back Arrow (<-) handler: navigate to login page and clear all fields
-window.history.pushState(null, "", window.location.href);
-window.addEventListener("popstate", function() {
+// Active smooth scroll and sidebar tab selection without changing location hash (prevents popstate logout)
+document.addEventListener("DOMContentLoaded", () => {
+    const navItems = document.querySelectorAll(".sidebar nav .nav-item");
+    navItems.forEach(item => {
+        item.addEventListener("click", function(e) {
+            e.preventDefault();
+            navItems.forEach(n => n.classList.remove("active"));
+            this.classList.add("active");
+
+            const href = this.getAttribute("href");
+            if (!href || href === "#") {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                return;
+            }
+
+            const targetSection = document.querySelector(href);
+            if (targetSection) {
+                targetSection.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        });
+    });
+});
+
+// Browser Back Arrow (<-) handler: only logs out if user navigates away from admin dashboard
+let initialPathname = window.location.pathname;
+window.history.pushState({ page: "admin-dashboard" }, "", window.location.href);
+window.addEventListener("popstate", function(event) {
+    // If popstate is just an in-page navigation, do not log out
+    if (window.location.pathname === initialPathname && event.state && event.state.page === "admin-dashboard") {
+        return;
+    }
     try {
         localStorage.clear();
         sessionStorage.clear();
